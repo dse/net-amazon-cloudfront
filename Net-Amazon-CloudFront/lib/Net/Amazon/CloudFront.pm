@@ -27,7 +27,7 @@ Net::Amazon::CloudFront - Use Amazon's CloudFront content delivery service.
         aws_secret_access_key => $aws_secret_access_key
     });
 
-    my @distributions = $cf->get_distribution_list();
+    my @dist = $cf->get_distribution_list();
 
 =head1 DESCRIPTION
 
@@ -272,9 +272,6 @@ A boolean indicating whether the distribution is enabled.
 
 =back
 
-Returns them as an array in array context, or as an array reference in
-scalar context.
-
 =cut
 
 sub get_distribution_list {
@@ -320,7 +317,7 @@ sub get_distribution_list {
 	}
 	push(@distribution, $distribution);
     }
-    return wantarray ? @distribution : \@distribution;
+    return @distribution;
 }
 
 sub get_date {
