@@ -112,17 +112,28 @@ my $KEEP_ALIVE_CACHESIZE = 10;
 
 =head2 new
 
-Create a new CloudFront client object.  Takes a hashref:
+    my $cf = Net::Amazon::CloudFront->new({
+        aws_access_key_id     => $aws_access_key_id,
+        aws_secret_access_key => $aws_secret_access_key,
+        # --- begin optional parameters ---
+        retry                 => 1,
+        fatal                 => 1,
+        timeout               => 30,
+	# --- end optional parameters ---
+    });
+
+Create a new CloudFront client object.  Takes a hashref containing the
+following keys:
 
 =over 4
 
-=item aws_access_key_id
+=item aws_access_key_id (required)
 
 Use your Access Key ID as the value of the AWSAccessKeyId parameter in
 requests you send to Amazon Web Services (when required). Your Access
 Key ID identifies you as the party responsible for the request.
 
-=item aws_secret_access_key
+=item aws_secret_access_key (required)
 
 Since your Access Key ID is not encrypted in requests to AWS, it could
 be discovered and used by anyone. Services that are not free require
@@ -133,7 +144,7 @@ come from you.
 DO NOT INCLUDE THE ACCESS KEY ID OR SECRET ACCESS KEY IN SCRIPTS OR
 APPLICATIONS YOU DISTRIBUTE. YOU'LL BE SORRY.
 
-=item retry
+=item retry (optional)
 
 If passed a true value, this library will retry upon errors.  This
 uses experimental backoff with retries after 1, 2, 4, 8, 16, and 32
@@ -141,18 +152,18 @@ seconds, as recommended by Amazon.
 
 This option defaults to off.
 
-=item timeout
+=item timeout (optional)
 
 Specifies a timeout in seconds for HTTP requests.
 
-Defaults to 30.
+This option defaults to 30.
 
-=item fatal
+=item fatal (optional)
 
 Specifies whether to throw an exception if an Amazon CloudFront action
 returns an error.
 
-Defaults to true.
+This option defaults to true.
 
 =back
 
