@@ -4,12 +4,11 @@ use strict;
 
 use Carp;
 use LWP::UserAgent::Determined;
-use XML::LibXML;
-use XML::LibXML::XPathContext;
 use URI;
 use HTTP::Date qw(time2str);
 use MIME::Base64 qw(encode_base64);
 use Digest::HMAC_SHA1 qw(hmac_sha1);
+use XML::Simple;
 
 =head1 NAME
 
@@ -96,9 +95,11 @@ http://github.com/dse/net-amazon-cloudfront
 
 use fields qw(aws_access_key_id
 	      aws_secret_access_key
-	      libxml
+	      xml_simple
 	      ua
 	      retry
+	      fatal
+	      error
 	      timeout
 	      date
 	      cloudfront_host);
@@ -146,6 +147,13 @@ Specifies a timeout in seconds for HTTP requests.
 
 Defaults to 30.
 
+=item fatal
+
+Specifies whether to throw an exception if an Amazon CloudFront action
+returns an error.
+
+Defaults to true.
+
 =back
 
 =cut
@@ -155,12 +163,17 @@ sub _set_stage_1_defaults {
     $self->{timeout}         = 30;
     $self->{retry}           = 0;
     $self->{cloudfront_host} = "cloudfront.amazonaws.com";
+    $self->{fatal}           = 1;
 }
 
 sub _set_stage_2_defaults {
     my ($self) = @_;
-    $self->{libxml}          //= XML::LibXML->new();
-    $self->{date}            //= time2str(time());
+    $self->{xml_simple} //=
+      XML::Simple->new(ForceArray => [qw(DistributionSummary
+					 Signer
+					 CNAME
+					 Path)]);
+    $self->{date} //= time2str(time());
 }
 
 sub new {
@@ -192,147 +205,308 @@ sub new {
     return $self;
 }
 
+=head2 Exception Handling For All CloudFront Actions
+
+By default, when an Amazon CloudFront action returns an error, the
+methods below simply throw an exception by calling croak() with a
+single parameter, a string such as "AccessDenied" summarizing the type
+of error:
+
+    AccessDenied at /usr/local/bin/frobnitz line 24
+
+A complete list of error types is available here:
+
+    http://bit.ly/mXi6Zb
+    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?Errors.html)
+
+If the constructor for an object was called with fatal set to false,
+the methods below simply return undef.  In this case, you *should*
+always check the method's return value.
+
+When fatal is set to false or you catch an exception, more detailed
+information about the error is available:
+
+    my $error = $cf->{error};
+
+$error is a hashref that looks like the following example:
+
+    {
+      'Error' => {
+        'Code' => 'NoSuchDistribution',
+        'Type' => 'Sender',
+        'Message' => 'The specified distribution does not exist.'
+      },
+      'xmlns' => 'http://cloudfront.amazonaws.com/doc/2010-11-01/',
+      'RequestId' => '843f28f6-c2ac-11e0-93df-2591eca165a6'
+    }
+
+Now for an example chunk of code with custom error handling:
+
+    $cf->{fatal} = 0;
+    my $dist = $cf->get_distribution("blah");
+    if ($dist) {
+        # yay!  do stuff ...
+    }
+    else {
+        my $error = $cf->{error};
+        # oh noes!  what do i do now?
+    }
+
+What with there being more than one way to do everything in Perl and
+all, if you want to keep fatal on, you can do something like this
+example:
+
+    my $dist = eval { $cf->get_distribution("blah"); }
+    if ($@) {
+        my $error = $cf->{error};
+        # oh noes!  :-(
+        return undef;
+    }
+    if ($dist) {
+        # yay!  :-)
+    }
+
 =head2 get_distribution_list
 
-    my @dist = $cf->get_distribution_list();
+    my $list = $cf->get_distribution_list();
 
-Retrieves a list of distributions.  Each will be a hashref containing
-the following keys:
+Retrieves a list of distributions.
+
+Returns a hashref containing the following keys:
 
 =over 4
 
-=item id
+=item IsTruncated (string)
 
-The distribution's identifier.  Example: "EDFDVBD632BHDS5"
+=item Marker (string)
 
-=item status
+=item MaxItems (string)
 
-One of the following strings: "Deployed" or "InProgress"
+=item NextMarker (string)
 
-=item deployed
+=item DistributionSummary
 
-A boolean indicating whether the distribution is deployed.
-
-=item in_progress
-
-A boolean indicating whether the distribution is in progress.
-
-=item last_modified_time
-
-The date and time the distribution was a modified, as a string of the
-format "2009-11-19T19:37:58Z".
-
-=item domain_name
-
-The distribution's domain name.  Example: "d604721fxaaqy9.cloudfront.net"
-
-=item s3_origin
-
-If the distribution uses an Amazon S3 origin, a hashref containing the
+An arrayref, each member of which is a hashref containing the
 following keys:
 
 =over 4
 
-=item dns_name
+=item Id (string)
 
-The S3 origin's domain name.  Example: "mybucket.s3.amazonaws.com"
+=item Status (string)
 
-=back
+=item InProgressInvalidationBatches (string)
 
-=item custom_origin
+=item LastModifiedTime (string)
 
-If the distribution uses a custom origin, a hashref containing the
-following keys:
+=item DomainName (string)
+
+=item S3Origin (hashref)
 
 =over 4
 
-=item dns_name
+=item DNSName (string)
 
-The origin's domain name.
-
-=item http_port
-
-=item https_port
-
-The HTTP and/or HTTPS port the custom origin listens on.
-
-=item origin_protocol_policy
-
-"http-only" or "match-viewer".
+=item OriginAccessIdentity (string)
 
 =back
 
-=item cname
+=item CustomOrigin (hashref)
 
-An array reference containing the CNAMEs.
+=over 4
 
-=item enabled
+=item DNSName (string)
 
-A boolean indicating whether the distribution is enabled.
+=item HTTPPort (string)
+
+=item HTTPSPort (string)
+
+=item OriginProtocolPolicy (string)
 
 =back
+
+=item CNAME (arrayref)
+
+=item Comment
+
+=item Enabled
+
+=item TrustedSigners
+
+=back
+
+=back
+
+More information on the underlying API method and the data it returns
+is available here:
+
+    http://bit.ly/p7CJvB
+
+    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?ListDistributions.html)
 
 =cut
 
 sub get_distribution_list {
     my ($self) = @_;
-    my $request = $self->_http_request({ resource =>
-					 "2010-11-01/distribution" });
-    my $response = $self->{ua}->request($request);
-    croak($response->status_line()) unless $response->is_success();
-    my $doc = $self->{libxml}->parse_string($response->content());
-    my $xpc = XML::LibXML::XPathContext->new($doc);
-    $xpc->registerNs("cf", "http://cloudfront.amazonaws.com/doc/2010-11-01/");
-    my @distribution;
-    foreach my $dsnode ($xpc->findnodes("//cf:DistributionSummary")) {
-
-	my $distribution = {};
-
-	my $id          = $xpc->findvalue("cf:Id", $dsnode);
-	my $status      = $xpc->findvalue("cf:Status", $dsnode);
-	my $domain_name = $xpc->findvalue("cf:DomainName", $dsnode);
-	my $ipib        = $xpc->findvalue("cf:InProgressInvalidationBatches",
-					  $dsnode) || 0;
-	my @cname       = (map { $_->textContent() }
-			   $xpc->findnodes("cf:CNAME", $dsnode));
-	my $enabled     = $xpc->findvalue("cf:Enabled", $dsnode) eq "true";
-	my $lmtime      = $xpc->findvalue("cf:LastModifiedTime", $dsnode);
-
-	$distribution->{id}                 = $id;
-	$distribution->{status}             = $status;
-	$distribution->{deployed}           = $status eq "Deployed";
-	$distribution->{in_progress}        = $status eq "InProgress";
-	$distribution->{domain_name}        = $domain_name;
-	$distribution->{cname}              = \@cname;
-	$distribution->{enabled}            = $enabled;
-	$distribution->{ipib}               = $ipib;
-	$distribution->{last_modified_time} = $lmtime;
-
-	if (my ($s3onode) = $xpc->findnodes("cf:S3Origin", $dsnode)) {
-	    my $s3o = $distribution->{s3_origin} = {};
-	    $s3o->{dns_name} = $xpc->findvalue("cf:DNSName", $s3onode);
-	}
-	elsif (my ($conode) = $xpc->findnodes("cf:CustomOrigin", $dsnode)) {
-	    my $co = $distribution->{custom_origin} = {};
-	    $co->{dns_name}   = $xpc->findvalue("cf:DNSName", $conode);
-	    $co->{http_port}  = $xpc->findvalue("cf:HTTPPort", $conode);
-	    $co->{https_port} = $xpc->findvalue("cf:HTTPSPort", $conode);
-	    $co->{origin_protocol_policy} =
-	      $xpc->findvalue("cf:OriginProtocolPolicy", $conode);
-	}
-
-	push(@distribution, $distribution);
-
-    }
-    return @distribution;
+    my $data = $self->_request_simple_xml("2010-11-01/distribution");
+    return $data;
 }
 
-sub get_date {
-    my ($self) = @_;
-    my $request = $self->_http_request({ resource => "date", unauth => 1 });
+=head2 get_distribution
+
+    my $dist = $cf->get_distribution($id);
+
+Retrieves all information about a distribution.
+
+Returns a hashref containing the following keys:
+
+=over 4
+
+=item Id (string)
+
+=item Status (string)
+
+=item LastModifiedTime (string)
+
+=item InProgressInvalidationBatches (string)
+
+=item DomainName (string)
+
+=item ActiveTrustedSigners (hashref)
+
+=over 4
+
+=back
+
+=item DistributionConfig (hashref)
+
+=over 4
+
+=item S3Origin (hashref)
+
+=over 4
+
+=item DNSName (string)
+
+=item OriginAccessIdentity (string)
+
+=back
+
+=item CustomOrigin (hashref)
+
+=over 4
+
+=item DNSName (string)
+
+=item HTTPPort (string)
+
+=item HTTPSPort (string)
+
+=item OriginProtocolPolicy (string)
+
+=back
+
+=item CallerReference (string)
+
+=item CNAME (arrayref)
+
+=item Comment (string)
+
+=item Enabled (string)
+
+=item DefaultRootObject (string)
+
+=item Logging (hashref)
+
+=item TrustedSigners (hashref)
+
+=back
+
+=item ETag
+
+The ETag value from the HTTP response headers.  Used later when
+updating a distribution's configuration or deleting a distribution.
+
+=back
+
+More information on the underlying API method and the data it returns
+is available here:
+
+    http://bit.ly/pisQXs
+
+    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?GetDistribution.html)
+
+=cut
+
+sub get_distribution {
+    my ($self, $id) = @_;
+    my $uri = sprintf("2010-11-01/distribution/%s", $id);
+    my $data = $self->_request_simple_xml($uri);
+    if ($data) {
+	$data->{ETag} = $data->{HTTPResponse}->header("ETag");
+    }
+    return $data;
+}
+
+=head2 post_invalidation
+
+    my $invalidation = $cf->post_invalidation(
+      $distribution_id, { Path => ["/image1.jpg", "/image2.jpg"],
+                          CallerReference => "my-batch" }
+    );
+
+More information on the underlying API method and the data it returns
+is available here:
+
+    http://bit.ly/pqeGmW
+    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?CreateInvalidation.html)
+
+=cut
+
+sub post_invalidation {
+    my ($self, $id, $batch) = @_;
+    my $uri = sprintf("2010-11-01/distribution/%s/invalidation", $id);
+    my $hash = { InvalidationBatch =>
+		 { Path => $batch->{Path},
+		   CallerReference => $batch->{CallerReference} } };
+    my $content = $self->{xml_simple}->XMLout($hash);
+    my $data = $self->_request_simple_xml({ method => "POST",
+					    resource => $uri,
+					    content => $content });
+    return $data;
+}
+
+###############################################################################
+
+sub _request_simple_xml {
+    my ($self, $args) = @_;
+    if (!ref($args)) {		# is a string, containing resource URI
+	$args = { resource => $args };
+    }
+    my $request  = $self->_http_request($args);
     my $response = $self->{ua}->request($request);
-    croak($response->status_line()) unless $response->is_success();
-    print($response->as_string());
+    my $data = $self->{xml_simple}->XMLin($response->content());
+    if ($ENV{DEBUG}) {
+	print($response->as_string());
+    }
+    if ($response->is_success()) {
+	$self->{error} = undef;
+	if ($data) {
+	    $data->{HTTPRequest}  = $request;
+	    $data->{HTTPResponse} = $response;
+	}
+	return $data;
+    }
+    else {
+	$self->{error} = $data;
+	if ($self->{fatal}) {
+	    croak($self->{error}->{Error}->{Code} //
+		  $response->status_line());
+	}
+	else {
+	    return undef;
+	}
+    }
 }
 
 sub _http_request {
@@ -340,12 +514,17 @@ sub _http_request {
     $args //= {};
     my $resource = $args->{resource};
     my $unauth = $args->{unauth};
-    my $query = $args->{query} // {};
+    my $query = $args->{query};
     my $base = "https://" . $self->{cloudfront_host};
     my $uri = URI->new_abs($resource, $base);
-    $uri->query_form($query);
+    $uri->query_form($query) if defined $query;
     my $url = $uri->as_string();
-    my $request = HTTP::Request->new(GET => $url);
+    my $method = $args->{method} // "GET";
+    my $request = HTTP::Request->new($method, $url);
+    my $content = $args->{content};
+    if (defined $content) {
+	$request->content($content);
+    }
     if (!$unauth) {
 	my $date = $self->{date};
 	my $sign = encode_base64(hmac_sha1($date,

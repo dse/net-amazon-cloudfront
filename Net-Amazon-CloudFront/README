@@ -11,7 +11,7 @@ OTHER PERL MODULES REQUIRED
 
 	LWP::UserAgent
 	LWP::UserAgent::Determined
-	XML::LibXML
+	XML::Simple
 	URI
 	HTTP::Date
 	MIME::Base64 (part of standard Perl)

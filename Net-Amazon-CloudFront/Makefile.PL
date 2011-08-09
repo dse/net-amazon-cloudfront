@@ -12,7 +12,7 @@ WriteMakefile(
 	      PREREQ_PM           => {
 				      'Test::More'                 => 0,
 				      'LWP::UserAgent::Determined' => 0,
-				      'XML::LibXML'                => 0,
+				      'XML::Simple'                => 0,
 				      'URI'                        => 0,
 				      'HTTP::Date'                 => 0,
 				      'MIME::Base64'               => 0,
