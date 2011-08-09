@@ -58,8 +58,8 @@ you actually deliver through the service.
 
 =back
 
-To find out more information about Amazon CloudFront, please visit:
-http://aws.amazon.com/cloudfront/
+To find out more information about Amazon CloudFront, please visit
+L<http://aws.amazon.com/cloudfront/>.
 
 =head2 What You Need To Use This Module
 
@@ -88,8 +88,8 @@ In the beginning, this is the only thing this module will be doing.
 
 =head2 About This Code
 
-Development of this code happens here:
-http://github.com/dse/net-amazon-cloudfront
+Development of this code happens at
+L<https://github.com/dse/net-amazon-cloudfront>.
 
 =cut
 
@@ -225,10 +225,8 @@ of error:
 
     AccessDenied at /usr/local/bin/frobnitz line 24
 
-A complete list of error types is available here:
-
-    http://bit.ly/mXi6Zb
-    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?Errors.html)
+A complete list of error types is available at L<http://bit.ly/mXi6Zb>
+(L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?Errors.html>).
 
 If the constructor for an object was called with fatal set to false,
 the methods below simply return undef.  In this case, you *should*
@@ -349,11 +347,8 @@ following keys:
 =back
 
 More information on the underlying API method and the data it returns
-is available here:
-
-    http://bit.ly/p7CJvB
-
-    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?ListDistributions.html)
+is available at L<http://bit.ly/p7CJvB>
+(L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?ListDistributions.html>).
 
 =cut
 
@@ -441,11 +436,8 @@ updating a distribution's configuration or deleting a distribution.
 =back
 
 More information on the underlying API method and the data it returns
-is available here:
-
-    http://bit.ly/pisQXs
-
-    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?GetDistribution.html)
+is available at L<http://bit.ly/pisQXs>
+(L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?GetDistribution.html>).
 
 =cut
 
@@ -467,10 +459,8 @@ sub get_distribution {
     );
 
 More information on the underlying API method and the data it returns
-is available here:
-
-    http://bit.ly/pqeGmW
-    (http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?CreateInvalidation.html)
+is available at L<http://bit.ly/pqeGmW>
+(L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?CreateInvalidation.html>).
 
 =cut
 
@@ -550,7 +540,7 @@ sub _http_request {
 	
 =head1 AUTHOR
 
-Darren Embry, C<< <dse at webonastick.com> >>
+Darren Embry, C<dse at webonastick.com>.
 
 =cut
 
@@ -563,6 +553,7 @@ __END__
 Please report any bugs or feature requests to C<bug-net-amazon-cloudfront at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Net-Amazon-CloudFront>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
+
 
 =head1 SUPPORT
 
@@ -594,6 +585,9 @@ L<http://search.cpan.org/dist/Net-Amazon-CloudFront>
 
 
 =head1 ACKNOWLEDGEMENTS
+
+RFX Technologies (L<http://www.rfxtechnologies.com/>) for paying me to
+write this.  :-)
 
 
 =head1 COPYRIGHT & LICENSE
