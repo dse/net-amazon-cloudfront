@@ -181,8 +181,11 @@ sub _set_stage_2_defaults {
     my ($self) = @_;
     $self->{xml_simple} //=
       XML::Simple->new(ForceArray => [qw(DistributionSummary
+					 InvalidationSummary
 					 Signer
 					 CNAME
+					 AwsAccountNumber
+					 KeyPairId
 					 Path)]);
     $self->{date} //= time2str(time());
 }
@@ -285,15 +288,15 @@ Returns a hashref containing the following keys:
 
 =over 4
 
-=item IsTruncated (string)
+=item IsTruncated (boolean)
 
 =item Marker (string)
 
-=item MaxItems (string)
+=item MaxItems (number)
 
 =item NextMarker (string)
 
-=item DistributionSummary
+=item DistributionSummary (arrayref)
 
 An arrayref, each member of which is a hashref containing the
 following keys:
@@ -304,7 +307,11 @@ following keys:
 
 =item Status (string)
 
-=item InProgressInvalidationBatches (string)
+=item IsDeployed (boolean) *
+
+=item IsInProgress (boolean) *
+
+=item InProgressInvalidationBatches (number)
 
 =item LastModifiedTime (string)
 
@@ -334,15 +341,29 @@ following keys:
 
 =back
 
-=item CNAME (arrayref)
+=item CNAME (arrayref of strings)
 
-=item Comment
+=item Comment (string)
 
-=item Enabled
+=item Enabled (boolean)
 
-=item TrustedSigners
+=item TrustedSigners (hashref)
+
+=over 4
+
+=item Self (optional)
+
+=item KeyPairId (arrayref of strings)
+
+=item AwsAccountNumber (arrayref of strings)
 
 =back
+
+=back
+
+=item HTTPRequest (HTTP::Request object) *
+
+=item HTTPResponse (HTTP::Response object) *
 
 =back
 
@@ -355,6 +376,16 @@ is available at L<http://bit.ly/p7CJvB>
 sub get_distribution_list {
     my ($self) = @_;
     my $data = $self->_request_simple_xml("2010-11-01/distribution");
+    if ($data) {
+	$data->{IsTruncated} = $data->{IsTruncated} eq "true";
+	$data->{MaxItems} += 0;
+	foreach my $ds (@{$data->{DistributionSummary}}) {
+	    $ds->{IsDeployed}   = $ds->{Status} eq "Deployed";
+	    $ds->{IsInProgress} = $ds->{Status} eq "InProgress";
+	    $ds->{Enabled}      = $ds->{Enabled} eq "true";
+	    $ds->{InProgressInvalidationBatches} += 0;
+	}
+    }
     return $data;
 }
 
@@ -372,9 +403,13 @@ Returns a hashref containing the following keys:
 
 =item Status (string)
 
+=item IsDeployed (boolean) *
+
+=item IsInProgress (boolean) *
+
 =item LastModifiedTime (string)
 
-=item InProgressInvalidationBatches (string)
+=item InProgressInvalidationBatches (number)
 
 =item DomainName (string)
 
@@ -414,7 +449,7 @@ Returns a hashref containing the following keys:
 
 =item CallerReference (string)
 
-=item CNAME (arrayref)
+=item CNAME (arrayref of strings)
 
 =item Comment (string)
 
@@ -424,7 +459,25 @@ Returns a hashref containing the following keys:
 
 =item Logging (hashref)
 
+=over 4
+
+=item Bucket (string)
+
+=item Prefix (string)
+
+=back
+
 =item TrustedSigners (hashref)
+
+=over 4
+
+=item Self (optional)
+
+=item KeyPairId (arrayref of strings)
+
+=item AwsAccountNumber (arrayref of strings)
+
+=back
 
 =back
 
@@ -439,6 +492,10 @@ More information on the underlying API method and the data it returns
 is available at L<http://bit.ly/pisQXs>
 (L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?GetDistribution.html>).
 
+=item HTTPRequest (HTTP::Request object) *
+
+=item HTTPResponse (HTTP::Response object) *
+
 =cut
 
 sub get_distribution {
@@ -446,6 +503,12 @@ sub get_distribution {
     my $uri = sprintf("2010-11-01/distribution/%s", $id);
     my $data = $self->_request_simple_xml($uri);
     if ($data) {
+	$data->{InProgressInvalidationBatches} += 0;
+	$data->{IsDeployed}   = $data->{Status} eq "Deployed";
+	$data->{IsInProgress} = $data->{Status} eq "InProgress";
+	if (my ($dc) = $data->{DistributionConfig}) {
+	    $dc->{Enabled} = $dc->{Enabled} eq "true";
+	}
 	$data->{ETag} = $data->{HTTPResponse}->header("ETag");
     }
     return $data;
@@ -458,26 +521,130 @@ sub get_distribution {
                           CallerReference => "my-batch" }
     );
 
+Creates a new object invalidation batch request.  Object invalidation
+is one way to remove content from edge caching servers before it is
+normally supposed to expire, after having updated that same content on
+the origin server.
+
+The CallerReference must be a unique identifier for this particular
+invalidation request.  One way to generate one is to create a UUID
+using a module such as Data::UUID, Data::GUID, or UUID::Tiny.  This
+module doesn't create one by default.
+
+If successful, this method returns a hashref containing the following
+keys:
+
+=over 4
+
+=item Status (string)
+
+=item IsCompleted (boolean) *
+
+=item Id (string)
+
+=item CreateTime (string)
+
+=item InvalidationBatch (hashref)
+
+=over 4
+
+=item Path (arrayref of strings)
+
+=item CallerReference (string)
+
+=back
+
+=back
+
 More information on the underlying API method and the data it returns
 is available at L<http://bit.ly/pqeGmW>
 (L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?CreateInvalidation.html>).
+
+More information about object invalidation is available at
+L<http://bit.ly/pSu8SH>
+(L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/DeveloperGuide/index.html?Invalidation.html>).
+
+=item HTTPRequest (HTTP::Request object) *
+
+=item HTTPResponse (HTTP::Response object) *
 
 =cut
 
 sub post_invalidation {
     my ($self, $id, $batch) = @_;
     my $uri = sprintf("2010-11-01/distribution/%s/invalidation", $id);
-    my $hash = { InvalidationBatch =>
-		 { Path => $batch->{Path},
-		   CallerReference => $batch->{CallerReference} } };
-    my $content = $self->{xml_simple}->XMLout($hash);
+    if (!ref($batch->{Path})) {
+	$batch->{Path} = [$batch->{Path}];
+    }
+    my $content = $self->{xml_simple}->XMLout($batch,
+					      RootName => "InvalidationBatch",
+					      NoAttr => 1);
     my $data = $self->_request_simple_xml({ method => "POST",
 					    resource => $uri,
 					    content => $content });
+    if ($data) {
+	$data->{IsCompleted} = $data->{Status} eq "Completed";
+    }
+    return $data;
+}
+
+=head2 get_invalidation_list
+
+    my $list = $cf->get_invalidation_list($distribution_id);
+
+Retrieves a list of invalidation batches.
+
+Returns a hashref containing the following keys:
+
+=over 4
+
+=item IsTruncated (boolean)
+
+=item Marker (string)
+
+=item MaxItems (number)
+
+=item NextMarker (string)
+
+=item InvalidationSummary (arrayref)
+
+An arrayref of hashrefs, each of which contains the following keys:
+
+=over 4
+
+=item Id (string)
+
+=item Status (string)
+
+=item IsCompleted (boolean) *
+
+=back
+
+=back
+
+=item HTTPRequest (HTTP::Request object) *
+
+=item HTTPResponse (HTTP::Response object) *
+
+=cut
+
+sub get_invalidation_list {
+    my ($self, $id) = @_;
+    my $uri = sprintf("2010-11-01/distribution/%s/invalidation", $id);
+    my $data = $self->_request_simple_xml($uri);
+    if ($data) {
+	$data->{IsTruncated} = $data->{IsTruncated} eq "true";
+	$data->{MaxItems} += 0;
+	foreach my $is (@{$data->{InvalidationSummary}}) {
+	    $is->{IsCompleted} = $is->{Status} eq "Completed";
+	}
+    }
     return $data;
 }
 
 ###############################################################################
+
+BEGIN { if ($ENV{DEBUG}) { require Data::Dumper; } }
 
 sub _request_simple_xml {
     my ($self, $args) = @_;
@@ -485,10 +652,19 @@ sub _request_simple_xml {
 	$args = { resource => $args };
     }
     my $request  = $self->_http_request($args);
+    if ($ENV{DEBUG}) {
+	print(("<" x 79) . "\n");
+	print($request->as_string());
+    }
     my $response = $self->{ua}->request($request);
+    if ($ENV{DEBUG}) {
+	print((">" x 79) . "\n");
+	print($response->as_string());
+    }
     my $data = $self->{xml_simple}->XMLin($response->content());
     if ($ENV{DEBUG}) {
-	print($response->as_string());
+	print(("=" x 79) . "\n");
+	print(Data::Dumper->Dump([$data], [qw($data)]));
     }
     if ($response->is_success()) {
 	$self->{error} = undef;
