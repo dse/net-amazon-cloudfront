@@ -84,7 +84,8 @@ capability to use CloudFront's Object Invalidation API methods to
 remove objects from the edge caching servers before updating objects
 on the origin server.
 
-In the beginning, this is the only thing this module will be doing.
+In the beginning, this module will not be capable of doing much of
+consequence except for this.
 
 =head2 About This Code
 
