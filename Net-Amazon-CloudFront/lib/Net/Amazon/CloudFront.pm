@@ -39,12 +39,12 @@ From Amazon's blurb:
 
 =over 4
 
-Amazon CloudFront is a web service for content delivery. It integrates
-with other Amazon Web Services to give developers and businesses an
-easy way to distribute content to end users with low latency, high
-data transfer speeds, and no commitments.
+"Amazon CloudFront is a web service for content delivery. It
+integrates with other Amazon Web Services to give developers and
+businesses an easy way to distribute content to end users with low
+latency, high data transfer speeds, and no commitments.
 
-Amazon CloudFront delivers your static and streaming content using a
+"Amazon CloudFront delivers your static and streaming content using a
 global network of edge locations. Requests for your objects are
 automatically routed to the nearest edge location, so content is
 delivered with the best possible performance. Amazon CloudFront is
@@ -54,7 +54,7 @@ CloudFront also works seamlessly with any origin server, which stores
 the original, definitive versions of your files. Like other Amazon Web
 Services, there are no contracts or monthly commitments for using
 Amazon CloudFront---you pay only for as much or as little content as
-you actually deliver through the service.
+you actually deliver through the service."
 
 =back
 
