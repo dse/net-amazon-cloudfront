@@ -207,7 +207,7 @@ The distribution's identifier.  Example: "EDFDVBD632BHDS5"
 
 =item status
 
-"Deployed" or "InProgress"
+One of the following strings: "Deployed" or "InProgress"
 
 =item deployed
 
@@ -276,7 +276,8 @@ A boolean indicating whether the distribution is enabled.
 
 sub get_distribution_list {
     my ($self) = @_;
-    my $request = $self->_http_request({ resource => "2010-11-01/distribution" });
+    my $request = $self->_http_request({ resource =>
+					 "2010-11-01/distribution" });
     my $response = $self->{ua}->request($request);
     croak($response->status_line()) unless $response->is_success();
     my $doc = $self->{libxml}->parse_string($response->content());
@@ -284,7 +285,9 @@ sub get_distribution_list {
     $xpc->registerNs("cf", "http://cloudfront.amazonaws.com/doc/2010-11-01/");
     my @distribution;
     foreach my $dsnode ($xpc->findnodes("//cf:DistributionSummary")) {
+
 	my $distribution = {};
+
 	my $id          = $xpc->findvalue("cf:Id", $dsnode);
 	my $status      = $xpc->findvalue("cf:Status", $dsnode);
 	my $domain_name = $xpc->findvalue("cf:DomainName", $dsnode);
@@ -294,15 +297,17 @@ sub get_distribution_list {
 			   $xpc->findnodes("cf:CNAME", $dsnode));
 	my $enabled     = $xpc->findvalue("cf:Enabled", $dsnode) eq "true";
 	my $lmtime      = $xpc->findvalue("cf:LastModifiedTime", $dsnode);
-	$distribution->{id} = $id;
-	$distribution->{status} = $status;
-	$distribution->{deployed} = $status eq "Deployed";
-	$distribution->{in_progress} = $status eq "InProgress";
-	$distribution->{domain_name} = $domain_name;
-	$distribution->{cname} = \@cname;
-	$distribution->{enabled} = $enabled;
-	$distribution->{ipib} = $ipib;
+
+	$distribution->{id}                 = $id;
+	$distribution->{status}             = $status;
+	$distribution->{deployed}           = $status eq "Deployed";
+	$distribution->{in_progress}        = $status eq "InProgress";
+	$distribution->{domain_name}        = $domain_name;
+	$distribution->{cname}              = \@cname;
+	$distribution->{enabled}            = $enabled;
+	$distribution->{ipib}               = $ipib;
 	$distribution->{last_modified_time} = $lmtime;
+
 	if (my ($s3onode) = $xpc->findnodes("cf:S3Origin", $dsnode)) {
 	    my $s3o = $distribution->{s3_origin} = {};
 	    $s3o->{dns_name} = $xpc->findvalue("cf:DNSName", $s3onode);
@@ -315,7 +320,9 @@ sub get_distribution_list {
 	    $co->{origin_protocol_policy} =
 	      $xpc->findvalue("cf:OriginProtocolPolicy", $conode);
 	}
+
 	push(@distribution, $distribution);
+
     }
     return @distribution;
 }
@@ -327,8 +334,6 @@ sub get_date {
     croak($response->status_line()) unless $response->is_success();
     print($response->as_string());
 }
-
-use constant CLOUDFRONT_HOST => "cloudfront.amazonaws.com";
 
 sub _http_request {
     my ($self, $args) = @_;
