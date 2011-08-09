@@ -293,11 +293,9 @@ Returns a hashref containing the following keys:
 
 =item IsTruncated (boolean)
 
-=item Marker (string)
-
-=item MaxItems (number)
-
-=item NextMarker (string)
+Whether more distributions remain to be listed.  While the Amazon
+CloudFront API returns a string, this Perl module converts it to a
+boolean for you.
 
 =item DistributionSummary (arrayref)
 
@@ -308,37 +306,60 @@ following keys:
 
 =item Id (string)
 
+The distribution's ID.
+
 =item Status (string)
+
+"Deployed" or "InProgress".
 
 =item IsDeployed (boolean) *
 
+Not part of the Amazon CloudFront API.  A convenience boolean property
+indicating whether the distribution is deployed.
+
 =item IsInProgress (boolean) *
 
-=item InProgressInvalidationBatches (number)
+Not part of the Amazon CloudFront API.  A convenience boolean property
+indicating whether the distribution is in progress.
+
+=item InProgressInvalidationBatches (integer)
+
+The number of invalidation requests in progress.
 
 =item LastModifiedTime (string)
 
+The time the distribution was most recently modified, in the form of a
+string like "2011-04-07T13:44:30.613Z".
+
 =item DomainName (string)
 
-=item S3Origin (hashref)
+The distribution's domain name.
+
+=item S3Origin (optional hashref)
+
+Origin information associated with the distribution if it is using an
+Amazon S3 origin.  Contains the following keys:
 
 =over 4
 
 =item DNSName (string)
 
-=item OriginAccessIdentity (string)
+=item OriginAccessIdentity (optional string)
 
 =back
 
-=item CustomOrigin (hashref)
+=item CustomOrigin (optional hashref)
+
+Origin information associated with the distribution if it is using a
+custom (non-S3) origin.  Contains the following keys:
 
 =over 4
 
 =item DNSName (string)
 
-=item HTTPPort (string)
+=item HTTPPort (optional string)
 
-=item HTTPSPort (string)
+=item HTTPSPort (optional string)
 
 =item OriginProtocolPolicy (string)
 
@@ -346,9 +367,14 @@ following keys:
 
 =item CNAME (arrayref of strings)
 
+An arrayref of CNAME aliases associated with the distribution.
+
 =item Comment (string)
 
 =item Enabled (boolean)
+
+While the Amazon CloudFront API returns a string, this Perl module
+converts it to a boolean for you.
 
 =item TrustedSigners (hashref)
 
@@ -415,7 +441,7 @@ Returns a hashref containing the following keys:
 
 =item LastModifiedTime (string)
 
-=item InProgressInvalidationBatches (number)
+=item InProgressInvalidationBatches (integer)
 
 =item DomainName (string)
 
@@ -429,25 +455,25 @@ Returns a hashref containing the following keys:
 
 =over 4
 
-=item S3Origin (hashref)
+=item S3Origin (optional hashref)
 
 =over 4
 
 =item DNSName (string)
 
-=item OriginAccessIdentity (string)
+=item OriginAccessIdentity (optional string)
 
 =back
 
-=item CustomOrigin (hashref)
+=item CustomOrigin (optional hashref)
 
 =over 4
 
 =item DNSName (string)
 
-=item HTTPPort (string)
+=item HTTPPort (optional string)
 
-=item HTTPSPort (string)
+=item HTTPSPort (optional string)
 
 =item OriginProtocolPolicy (string)
 
@@ -455,25 +481,46 @@ Returns a hashref containing the following keys:
 
 =item CallerReference (string)
 
+The caller reference string used to create the distribution.
+
 =item CNAME (arrayref of strings)
 
 =item Comment (string)
 
-=item Enabled (string)
+Any comments that were included about the distribution.
+
+=item Enabled (boolean)
+
+Whether the distribution is enabled to accept end user requests for
+content.  While the Amazon CloudFront API provides the string "true"
+or "false", this module converts it to a boolean for you.
 
 =item DefaultRootObject (string)
 
+If one has been assigned, the distribution's default root object.
+
+Example: "index.html"
+
 =item Logging (hashref)
+
+Controls whether access longs are written for the distribution.
 
 =over 4
 
 =item Bucket (string)
 
+The Amazon S3 bucket where the logs are stored.
+
 =item Prefix (string)
+
+An optional filename prefix.  Can be the empty string.
 
 =back
 
 =item TrustedSigners (hashref)
+
+Specified any AWS accounts permitted to create signed URLs for private
+content.
 
 =over 4
 
@@ -547,16 +594,30 @@ keys:
 
 =item Status (string)
 
+"InProgress" or "Completed".
+
 =item IsCompleted (boolean) *
 
 A shorthand boolean indicating whether the post invalidation request
-has been completed.
+has been completed.  Not part of the Amazon CloudFront API.
+
+=item IsInProgress (boolean) *
+
+A shorthand boolean indicating whether the post invalidation request
+is in progress.  Not part of the Amazon CloudFront API.
 
 =item Id (string)
 
+The ID of the invalidation request, later used to check its status.
+
 =item CreateTime (string)
 
+When the invalidation request was first made, in the form of a string
+like "2009-11-19T19:37:58Z".
+
 =item InvalidationBatch (hashref)
+
+The invalidation information for the request.
 
 =over 4
 
@@ -599,6 +660,7 @@ sub post_invalidation {
 					    content => $content });
     if ($data) {
 	$data->{IsCompleted} = $data->{Status} eq "Completed";
+	$data->{IsInProgress} = $data->{Status} eq "IsInProgress";
     }
     return $data;
 }
@@ -615,11 +677,8 @@ Returns a hashref containing the following keys:
 
 =item IsTruncated (boolean)
 
-=item Marker (string)
-
-=item MaxItems (number)
-
-=item NextMarker (string)
+While the Amazon CloudFront API returns a string, this Perl module
+converts it to a boolean for you.
 
 =item InvalidationSummary (arrayref)
 
@@ -643,7 +702,8 @@ has been completed.
 =item HTTPResponse (HTTP::Response object) *
 
 The underlying objects for the HTTP request and response, incase you
-need to pull any data from them.
+need to pull any data from them.  These are not part of the standard
+Amazon CloudFront API.
 
 =back
 
@@ -710,19 +770,25 @@ sub _request_simple_xml {
 sub _http_request {
     my ($self, $args) = @_;
     $args //= {};
+
     my $resource = $args->{resource};
-    my $unauth = $args->{unauth};
-    my $query = $args->{query};
     my $base = "https://" . $self->{cloudfront_host};
     my $uri = URI->new_abs($resource, $base);
+
+    my $query = $args->{query};
     $uri->query_form($query) if defined $query;
     my $url = $uri->as_string();
+
     my $method = $args->{method} // "GET";
+
     my $request = HTTP::Request->new($method, $url);
+
     my $content = $args->{content};
     if (defined $content) {
 	$request->content($content);
     }
+
+    my $unauth = $args->{unauth};
     if (!$unauth) {
 	my $date = $self->{date};
 	my $sign = encode_base64(hmac_sha1($date,
@@ -732,6 +798,7 @@ sub _http_request {
 	$request->header(Authorization =>
 			 "AWS " . $self->{aws_access_key_id} . ":" . $sign);
     }
+
     return $request;
 }
 	
