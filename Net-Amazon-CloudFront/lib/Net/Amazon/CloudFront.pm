@@ -14,6 +14,8 @@ use XML::Simple;
 
 Net::Amazon::CloudFront - Use Amazon's CloudFront content delivery service.
 
+THIS MODULE IS A WORK IN PROGRESS.  APIs are subject to change.
+
 =head1 SYNOPSIS
 
     use Net::Amazon::CloudFront;
@@ -366,6 +368,9 @@ following keys:
 
 =item HTTPResponse (HTTP::Response object) *
 
+The underlying objects for the HTTP request and response, incase you
+need to pull any data from them.
+
 =back
 
 More information on the underlying API method and the data it returns
@@ -487,15 +492,18 @@ Returns a hashref containing the following keys:
 The ETag value from the HTTP response headers.  Used later when
 updating a distribution's configuration or deleting a distribution.
 
+=item HTTPRequest (HTTP::Request object) *
+
+=item HTTPResponse (HTTP::Response object) *
+
+The underlying objects for the HTTP request and response, incase you
+need to pull any data from them.
+
 =back
 
 More information on the underlying API method and the data it returns
 is available at L<http://bit.ly/pisQXs>
 (L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?GetDistribution.html>).
-
-=item HTTPRequest (HTTP::Request object) *
-
-=item HTTPResponse (HTTP::Response object) *
 
 =cut
 
@@ -541,6 +549,9 @@ keys:
 
 =item IsCompleted (boolean) *
 
+A shorthand boolean indicating whether the post invalidation request
+has been completed.
+
 =item Id (string)
 
 =item CreateTime (string)
@@ -555,6 +566,13 @@ keys:
 
 =back
 
+=item HTTPRequest (HTTP::Request object) *
+
+=item HTTPResponse (HTTP::Response object) *
+
+The underlying objects for the HTTP request and response, incase you
+need to pull any data from them.
+
 =back
 
 More information on the underlying API method and the data it returns
@@ -564,10 +582,6 @@ is available at L<http://bit.ly/pqeGmW>
 More information about object invalidation is available at
 L<http://bit.ly/pSu8SH>
 (L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/DeveloperGuide/index.html?Invalidation.html>).
-
-=item HTTPRequest (HTTP::Request object) *
-
-=item HTTPResponse (HTTP::Response object) *
 
 =cut
 
@@ -619,13 +633,19 @@ An arrayref of hashrefs, each of which contains the following keys:
 
 =item IsCompleted (boolean) *
 
-=back
+A shorthand boolean indicating whether the post invalidation request
+has been completed.
 
 =back
 
 =item HTTPRequest (HTTP::Request object) *
 
 =item HTTPResponse (HTTP::Response object) *
+
+The underlying objects for the HTTP request and response, incase you
+need to pull any data from them.
+
+=back
 
 =cut
 
