@@ -287,7 +287,8 @@ example:
 
 Retrieves a list of distributions.
 
-Returns a hashref containing the following keys:
+Returns a hashref containing the keys listed below.  The actual list
+of distributions is in DistributionSummary.
 
 =over 4
 
@@ -312,12 +313,12 @@ The distribution's ID.
 
 "Deployed" or "InProgress".
 
-=item IsDeployed (boolean) *
+=item IsDeployed (boolean) [not part of Amazon's API]
 
 Not part of the Amazon CloudFront API.  A convenience boolean property
 indicating whether the distribution is deployed.
 
-=item IsInProgress (boolean) *
+=item IsInProgress (boolean) [not part of Amazon's API]
 
 Not part of the Amazon CloudFront API.  A convenience boolean property
 indicating whether the distribution is in progress.
@@ -390,9 +391,9 @@ converts it to a boolean for you.
 
 =back
 
-=item HTTPRequest (HTTP::Request object) *
+=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) *
+=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.
@@ -435,9 +436,9 @@ Returns a hashref containing the following keys:
 
 =item Status (string)
 
-=item IsDeployed (boolean) *
+=item IsDeployed (boolean) [not part of Amazon's API]
 
-=item IsInProgress (boolean) *
+=item IsInProgress (boolean) [not part of Amazon's API]
 
 =item LastModifiedTime (string)
 
@@ -539,9 +540,9 @@ content.
 The ETag value from the HTTP response headers.  Used later when
 updating a distribution's configuration or deleting a distribution.
 
-=item HTTPRequest (HTTP::Request object) *
+=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) *
+=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.
@@ -596,12 +597,12 @@ keys:
 
 "InProgress" or "Completed".
 
-=item IsCompleted (boolean) *
+=item IsCompleted (boolean) [not part of Amazon's API]
 
 A shorthand boolean indicating whether the post invalidation request
 has been completed.  Not part of the Amazon CloudFront API.
 
-=item IsInProgress (boolean) *
+=item IsInProgress (boolean) [not part of Amazon's API]
 
 A shorthand boolean indicating whether the post invalidation request
 is in progress.  Not part of the Amazon CloudFront API.
@@ -627,9 +628,9 @@ The invalidation information for the request.
 
 =back
 
-=item HTTPRequest (HTTP::Request object) *
+=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) *
+=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.
@@ -690,16 +691,16 @@ An arrayref of hashrefs, each of which contains the following keys:
 
 =item Status (string)
 
-=item IsCompleted (boolean) *
+=item IsCompleted (boolean) [not part of Amazon's API]
 
 A shorthand boolean indicating whether the post invalidation request
 has been completed.
 
 =back
 
-=item HTTPRequest (HTTP::Request object) *
+=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) *
+=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.  These are not part of the standard
