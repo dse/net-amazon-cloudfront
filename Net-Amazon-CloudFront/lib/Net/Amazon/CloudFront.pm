@@ -130,13 +130,13 @@ following keys:
 
 =over 4
 
-=item aws_access_key_id (required)
+=item C<aws_access_key_id> (required)
 
 Use your Access Key ID as the value of the AWSAccessKeyId parameter in
 requests you send to Amazon Web Services (when required). Your Access
 Key ID identifies you as the party responsible for the request.
 
-=item aws_secret_access_key (required)
+=item C<aws_secret_access_key> (required)
 
 Since your Access Key ID is not encrypted in requests to AWS, it could
 be discovered and used by anyone. Services that are not free require
@@ -147,7 +147,7 @@ come from you.
 DO NOT INCLUDE THE ACCESS KEY ID OR SECRET ACCESS KEY IN SCRIPTS OR
 APPLICATIONS YOU DISTRIBUTE. YOU'LL BE SORRY.
 
-=item retry (optional)
+=item C<retry> (optional)
 
 If passed a true value, this library will retry upon errors.  This
 uses experimental backoff with retries after 1, 2, 4, 8, 16, and 32
@@ -155,13 +155,13 @@ seconds, as recommended by Amazon.
 
 This option defaults to off.
 
-=item timeout (optional)
+=item C<timeout> (optional)
 
 Specifies a timeout in seconds for HTTP requests.
 
 This option defaults to 30.
 
-=item fatal (optional)
+=item C<fatal> (optional)
 
 Specifies whether to throw an exception if an Amazon CloudFront action
 returns an error.
@@ -292,108 +292,108 @@ of distributions is in DistributionSummary.
 
 =over 4
 
-=item IsTruncated (boolean)
+=item C<IsTruncated> (boolean)
 
 Whether more distributions remain to be listed.  While the Amazon
 CloudFront API returns a string, this Perl module converts it to a
 boolean for you.
 
-=item DistributionSummary (arrayref)
+=item C<DistributionSummary> (arrayref)
 
 An arrayref, each member of which is a hashref containing the
 following keys:
 
 =over 4
 
-=item Id (string)
+=item C<Id> (string)
 
 The distribution's ID.
 
-=item Status (string)
+=item C<Status> (string)
 
 "Deployed" or "InProgress".
 
-=item IsDeployed (boolean) [not part of Amazon's API]
+=item C<IsDeployed> (boolean) [not part of Amazon's API]
 
 Not part of the Amazon CloudFront API.  A convenience boolean property
 indicating whether the distribution is deployed.
 
-=item IsInProgress (boolean) [not part of Amazon's API]
+=item C<IsInProgress> (boolean) [not part of Amazon's API]
 
 Not part of the Amazon CloudFront API.  A convenience boolean property
 indicating whether the distribution is in progress.
 
-=item InProgressInvalidationBatches (integer)
+=item C<InProgressInvalidationBatches> (integer)
 
 The number of invalidation requests in progress.
 
-=item LastModifiedTime (string)
+=item C<LastModifiedTime> (string)
 
 The time the distribution was most recently modified, in the form of a
 string like "2011-04-07T13:44:30.613Z".
 
-=item DomainName (string)
+=item C<DomainName> (string)
 
 The distribution's domain name.
 
-=item S3Origin (optional hashref)
+=item C<S3Origin> (optional hashref)
 
 Origin information associated with the distribution if it is using an
 Amazon S3 origin.  Contains the following keys:
 
 =over 4
 
-=item DNSName (string)
+=item C<DNSName> (string)
 
-=item OriginAccessIdentity (optional string)
+=item C<OriginAccessIdentity> (optional string)
 
 =back
 
-=item CustomOrigin (optional hashref)
+=item C<CustomOrigin> (optional hashref)
 
 Origin information associated with the distribution if it is using a
 custom (non-S3) origin.  Contains the following keys:
 
 =over 4
 
-=item DNSName (string)
+=item C<DNSName> (string)
 
-=item HTTPPort (optional string)
+=item C<HTTPPort> (optional string)
 
-=item HTTPSPort (optional string)
+=item C<HTTPSPort> (optional string)
 
-=item OriginProtocolPolicy (string)
+=item C<OriginProtocolPolicy> (string)
 
 =back
 
-=item CNAME (arrayref of strings)
+=item C<CNAME> (arrayref of strings)
 
 An arrayref of CNAME aliases associated with the distribution.
 
-=item Comment (string)
+=item C<Comment> (string)
 
-=item Enabled (boolean)
+=item C<Enabled> (boolean)
 
 While the Amazon CloudFront API returns a string, this Perl module
-converts it to a boolean for you.
+converts it to a true or false value for you.
 
-=item TrustedSigners (hashref)
+=item C<TrustedSigners> (hashref)
 
 =over 4
 
-=item Self (optional)
+=item C<Self> (optional)
 
-=item KeyPairId (arrayref of strings)
+=item C<KeyPairId> (arrayref of strings)
 
-=item AwsAccountNumber (arrayref of strings)
-
-=back
+=item C<AwsAccountNumber> (arrayref of strings)
 
 =back
 
-=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
+=back
 
-=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
+=item C<HTTPRequest> (HTTP::Request object) [not part of Amazon's API]
+
+=item C<HTTPResponse> (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.
@@ -432,117 +432,117 @@ Returns a hashref containing the following keys:
 
 =over 4
 
-=item Id (string)
+=item C<Id> (string)
 
-=item Status (string)
+=item C<Status> (string)
 
-=item IsDeployed (boolean) [not part of Amazon's API]
+=item C<IsDeployed> (boolean) [not part of Amazon's API]
 
-=item IsInProgress (boolean) [not part of Amazon's API]
+=item C<IsInProgress> (boolean) [not part of Amazon's API]
 
-=item LastModifiedTime (string)
+=item C<LastModifiedTime> (string)
 
-=item InProgressInvalidationBatches (integer)
+=item C<InProgressInvalidationBatches> (integer)
 
-=item DomainName (string)
+=item C<DomainName> (string)
 
-=item ActiveTrustedSigners (hashref)
+=item C<ActiveTrustedSigners> (hashref)
 
 =over 4
 
 =back
 
-=item DistributionConfig (hashref)
+=item C<DistributionConfig> (hashref)
 
 =over 4
 
-=item S3Origin (optional hashref)
+=item C<S3Origin> (optional hashref)
 
 =over 4
 
-=item DNSName (string)
+=item C<DNSName> (string)
 
-=item OriginAccessIdentity (optional string)
+=item C<OriginAccessIdentity> (optional string)
 
 =back
 
-=item CustomOrigin (optional hashref)
+=item C<CustomOrigin> (optional hashref)
 
 =over 4
 
-=item DNSName (string)
+=item C<DNSName> (string)
 
-=item HTTPPort (optional string)
+=item C<HTTPPort> (optional string)
 
-=item HTTPSPort (optional string)
+=item C<HTTPSPort> (optional string)
 
-=item OriginProtocolPolicy (string)
+=item C<OriginProtocolPolicy> (string)
 
 =back
 
-=item CallerReference (string)
+=item C<CallerReference> (string)
 
 The caller reference string used to create the distribution.
 
-=item CNAME (arrayref of strings)
+=item C<CNAME> (arrayref of strings)
 
-=item Comment (string)
+=item C<Comment> (string)
 
 Any comments that were included about the distribution.
 
-=item Enabled (boolean)
+=item C<Enabled> (boolean)
 
 Whether the distribution is enabled to accept end user requests for
 content.  While the Amazon CloudFront API provides the string "true"
-or "false", this module converts it to a boolean for you.
+or "false", this module converts it to a true or false value for you.
 
-=item DefaultRootObject (string)
+=item C<DefaultRootObject> (string)
 
 If one has been assigned, the distribution's default root object.
 
 Example: "index.html"
 
-=item Logging (hashref)
+=item C<Logging> (hashref)
 
 Controls whether access longs are written for the distribution.
 
 =over 4
 
-=item Bucket (string)
+=item C<Bucket> (string)
 
 The Amazon S3 bucket where the logs are stored.
 
-=item Prefix (string)
+=item C<Prefix> (string)
 
 An optional filename prefix.  Can be the empty string.
 
 =back
 
-=item TrustedSigners (hashref)
+=item C<TrustedSigners> (hashref)
 
 Specified any AWS accounts permitted to create signed URLs for private
 content.
 
 =over 4
 
-=item Self (optional)
+=item C<Self> (optional)
 
-=item KeyPairId (arrayref of strings)
+=item C<KeyPairId> (arrayref of strings)
 
-=item AwsAccountNumber (arrayref of strings)
-
-=back
+=item C<AwsAccountNumber> (arrayref of strings)
 
 =back
 
-=item ETag
+=back
 
-The ETag value from the HTTP response headers.  Used later when
+=item C<ETag>
+
+The C<ETag> value from the HTTP response headers.  Used later when
 updating a distribution's configuration or deleting a distribution.
 
-=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
+=item C<HTTPRequest> (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
+=item C<HTTPResponse> (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.
@@ -593,44 +593,44 @@ keys:
 
 =over 4
 
-=item Status (string)
+=item C<Status> (string)
 
 "InProgress" or "Completed".
 
-=item IsCompleted (boolean) [not part of Amazon's API]
+=item C<IsCompleted> (boolean) [not part of Amazon's API]
 
 A shorthand boolean indicating whether the post invalidation request
 has been completed.  Not part of the Amazon CloudFront API.
 
-=item IsInProgress (boolean) [not part of Amazon's API]
+=item C<IsInProgress> (boolean) [not part of Amazon's API]
 
 A shorthand boolean indicating whether the post invalidation request
 is in progress.  Not part of the Amazon CloudFront API.
 
-=item Id (string)
+=item C<Id> (string)
 
 The ID of the invalidation request, later used to check its status.
 
-=item CreateTime (string)
+=item C<CreateTime> (string)
 
 When the invalidation request was first made, in the form of a string
 like "2009-11-19T19:37:58Z".
 
-=item InvalidationBatch (hashref)
+=item C<InvalidationBatch> (hashref)
 
 The invalidation information for the request.
 
 =over 4
 
-=item Path (arrayref of strings)
+=item C<Path> (arrayref of strings)
 
-=item CallerReference (string)
+=item C<CallerReference> (string)
 
 =back
 
-=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
+=item C<HTTPRequest> (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
+=item C<HTTPResponse> (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.
@@ -676,31 +676,31 @@ Returns a hashref containing the following keys:
 
 =over 4
 
-=item IsTruncated (boolean)
+=item C<IsTruncated> (boolean)
 
 While the Amazon CloudFront API returns a string, this Perl module
-converts it to a boolean for you.
+converts it to a true or false value for you.
 
-=item InvalidationSummary (arrayref)
+=item C<InvalidationSummary> (arrayref)
 
 An arrayref of hashrefs, each of which contains the following keys:
 
 =over 4
 
-=item Id (string)
+=item C<Id> (string)
 
-=item Status (string)
+=item C<Status> (string)
 
-=item IsCompleted (boolean) [not part of Amazon's API]
+=item C<IsCompleted> (boolean) [not part of Amazon's API]
 
 A shorthand boolean indicating whether the post invalidation request
 has been completed.
 
 =back
 
-=item HTTPRequest (HTTP::Request object) [not part of Amazon's API]
+=item C<HTTPRequest> (HTTP::Request object) [not part of Amazon's API]
 
-=item HTTPResponse (HTTP::Response object) [not part of Amazon's API]
+=item C<HTTPResponse> (HTTP::Response object) [not part of Amazon's API]
 
 The underlying objects for the HTTP request and response, incase you
 need to pull any data from them.  These are not part of the standard
