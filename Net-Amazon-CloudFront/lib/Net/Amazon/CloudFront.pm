@@ -235,7 +235,7 @@ A complete list of error types is available at L<http://bit.ly/mXi6Zb>
 (L<http://docs.amazonwebservices.com/AmazonCloudFront/latest/APIReference/index.html?Errors.html>).
 
 If the constructor for an object was called with fatal set to false,
-the methods below simply return undef.  In this case, you *should*
+the methods below simply return undef.  In this case, you B<should>
 always check the method's return value.
 
 When fatal is set to false or you catch an exception, more detailed
